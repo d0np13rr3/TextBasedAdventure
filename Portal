@@ -1,0 +1,1887 @@
+"""pip install Pillow for Python 3.7 imagery"""
+ 
+from tkinter import *
+from tkinter import ttk
+import tkinter
+from tkinter import ttk
+from PIL import ImageTk, Image
+import os
+import numpy as np
+from os import path
+import shutil
+from pathlib import Path
+import pandas as pd
+import xlrd
+import xlwt
+from xlwt import Workbook
+from tkinter import messagebox
+
+import openpyxl
+from openpyxl import load_workbook
+import sys
+import random
+import time
+
+ 
+main = Tk()
+
+try:
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    wb.close()
+except:
+    messagebox.showinfo("Database error", "The database excel is still open") 
+    sys.exit(1)
+
+
+"""Databases"""
+ListOfLetters = ['B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+
+###Shop stock declaration
+WeaponList = []
+ArmorList = []
+
+WoodsmanShopWeapons = []
+WoodsmanShopArmor = []
+
+wb = load_workbook(filename = 'Database RPG.xlsx')
+sheet0 = wb['WeaponsEffectValue']
+sheet1 = wb['ArmorEffectValue']
+ListW = 'A'
+ListWV = 'K'
+for i in range(2, 101):
+    ListW = ListW + str(i)
+    ListWV = ListWV + str(i)
+    i = i + 1
+    Value = sheet0[ListW].value
+    ValueV = sheet0[ListWV].value
+    if Value is not None:    
+        WeaponList.append([Value, ValueV])
+    ListW = 'A'
+    ListWV = 'K'
+
+ListA = 'A'
+ListAV = 'K'
+for i in range(2, 101):
+    ListA = ListA + str(i)
+    ListAV = ListAV + str(i)
+    i = i + 1
+    Value = sheet1[ListA].value
+    ValueV = sheet1[ListAV].value
+    if Value is not None:    
+        ArmorList.append([Value, ValueV])
+    ListA = 'A'
+    ListAV = 'K'
+
+WoodsmanShopWeapons = WeaponList[0:3]
+WoodsmanShopArmor = ArmorList[0:3]
+
+
+###character and class declaration
+Classes = []
+wb = load_workbook(filename = 'Database RPG.xlsx')
+sheet = wb['Classes']
+Class = 'A'
+for i in range(2, 11):
+    Class = Class + str(i)
+    i = i + 1
+    Value = sheet[Class].value
+    if Value is not None:    
+        Classes.append(Value)
+    Class = 'A'
+
+Characters = []
+SavedCharacter =[]
+wb.close()
+
+SavedCharacters = []
+
+SCIndex = []
+wb1 = load_workbook(filename ='Database RPG.xlsx')
+sheet1 = wb1['Characters']
+Class = 'A'
+Cindex = 2
+for i in range(2, 110):
+    Class = Class + str(i)
+    i = i + 1
+    Value = sheet1[Class].value
+    if Value is not None:    
+        SavedCharacters.append(Value)
+        SCIndex.append(Cindex)
+        Cindex = Cindex + 1
+    Class = 'A'
+wb1.close()
+
+Property = []
+
+"""global variables"""
+#start story variables
+global var1
+var1 = IntVar()
+global var2
+var2 = IntVar()
+global var3
+var3 = IntVar()
+global var11
+var11 = IntVar()
+global var12
+var12 = IntVar()
+global var13
+var13 = IntVar()
+global var21
+var21 = IntVar()
+global var22
+var22 = IntVar()
+global var23
+var23 = IntVar()
+global ReturnList
+ReturnList = []
+
+global gender1
+gender1 = IntVar()
+global gender2
+gender2 = IntVar()
+
+global CharacterDropBox
+global ActionsInnCBox
+
+
+global AListCharacter
+AListCharacter =[]
+global WeaponListCharacter
+WeaponListCharacter =[]
+global HeadListCharacter
+HeadListCharacter = []
+global ArmorListCharacter
+ArmorListCharacter = []
+global PantsListCharacter
+PantsListCharacter = []
+global ShoesListCharacter
+ShoesListCharacter = []
+
+global ActionsInn
+ActionsInn = ["Visit","Rob","Buy"]
+
+global StoryQuote
+StoryQuote = ""
+
+
+
+
+
+"""GUI"""
+
+main.title('Game')
+main.geometry('1000x600')
+
+"""define"""
+
+"""functie Maak rapport"""
+
+storyline = [] 
+
+#Start Game functions
+def savecharacter():
+    #check for duplicate player
+    SavedCharacters =[]
+    SCIndex = []
+    wb1 = load_workbook(filename ='Database RPG.xlsx')
+    sheet1 = wb1['Characters']
+    Class = 'A'
+    Cindex = 2
+    for i in range(2, 110):
+        Class = Class + str(i)
+        i = i + 1
+        Value = sheet1[Class].value
+        if Value is not None:    
+            SavedCharacters.append(Value)
+            SCIndex.append(Cindex)
+            Cindex = Cindex + 1
+        Class = 'A'
+    
+    NumberChars = len(SavedCharacters)
+    wb2 = load_workbook(filename ='Database RPG.xlsx')
+    sheet2 = wb2['Characters']
+    SavedChar = []
+    k = 2
+    for i in range(2, NumberChars +2):
+        Name = sheet2['A'+str(k)].value
+        Clas = sheet2['B'+str(k)].value
+        Value2 = Name+Clas
+        SavedChar.append(Value2) 
+        k = k + 1
+
+    Name2 = NamePlayer.get()
+    ClassChosen2 = ClassDropBox.get()
+    Value2Check = Name2+ClassChosen2
+    if Value2Check in SavedChar:
+        sys.exit("Stop, this soul is already born...")
+        messagebox.showinfo("Stop", "This soul is already born...")
+
+    #save your character
+    femalecheck = gender1.get()
+    malecheck = gender2.get()
+    if gender1.get() + gender2.get() == 2:
+        sys.exit("Stop, you can't be both...")
+        messagebox.showinfo("Stop, you can't be both...")
+    elif gender1.get() + gender2.get() == 0:
+        sys.exit("Stop, you have to choose...")
+        messagebox.showinfo("Stop, you have to choose...")
+    Gender = ""
+    if femalecheck == 1:
+        Gender = "Female"
+    else:
+        Gender = "Male"    
+    
+    indexnewplayer = len(SavedCharacters) + 2
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['Classes']
+    Name =  NamePlayer.get()
+
+    
+    ClassChosen = ClassDropBox.get()
+    if ClassChosen == "Warrior":
+        Strength = sheet['B2'].value
+        Defense = sheet['C2'].value
+        Dexterity = sheet['D2'].value
+        Magic = sheet['E2'].value
+        Stamina = sheet['F2'].value
+        Social = sheet['G2'].value
+        Life = sheet['H2'].value
+        Mana = sheet['I2'].value
+    elif ClassChosen == "Archer":
+        Strength = sheet['B3'].value
+        Defense = sheet['C3'].value       
+        Dexterity = sheet['D3'].value
+        Magic = sheet['E3'].value
+        Stamina = sheet['F3'].value
+        Social = sheet['G3'].value
+        Life = sheet['H3'].value
+        Mana = sheet['I3'].value
+    elif ClassChosen == "Wizard":
+        Strength = sheet['B4'].value
+        Defense = sheet['C4'].value
+        Dexterity = sheet['D4'].value
+        Magic = sheet['E4'].value
+        Stamina = sheet['F4'].value
+        Social = sheet['G4'].value
+        Life = sheet['H4'].value
+        Mana = sheet['I4'].value
+
+    SavedCharacter.append(Name)
+    SavedCharacter.append(ClassChosen)
+    SavedCharacter.append(Strength)
+    SavedCharacter.append(Defense)
+    SavedCharacter.append(Dexterity)
+    SavedCharacter.append(Magic)
+    SavedCharacter.append(Stamina)
+    SavedCharacter.append(Social)
+    SavedCharacter.append(Life)
+    SavedCharacter.append(Mana)
+
+    sheet = wb['Characters']
+    sheet1 = wb['ItemsInventory']
+    sheet2 = wb['WeaponInventory']
+    sheet3 = wb['ArmorInventory']
+    sheet4 = wb['Equipment']
+    sheet['A'+str(indexnewplayer)] = SavedCharacter[0]
+    sheet1['A'+str(indexnewplayer)] = SavedCharacter[0]
+    sheet2['A'+str(indexnewplayer)] = SavedCharacter[0]
+    sheet3['A'+str(indexnewplayer)] = SavedCharacter[0]
+    sheet4['A'+str(indexnewplayer)] = SavedCharacter[0]
+    sheet['B'+str(indexnewplayer)] = SavedCharacter[1]
+    sheet['C'+str(indexnewplayer)] = SavedCharacter[2]
+    sheet['D'+str(indexnewplayer)] = SavedCharacter[3]
+    sheet['E'+str(indexnewplayer)] = SavedCharacter[4]
+    sheet['F'+str(indexnewplayer)] = SavedCharacter[5]
+    sheet['G'+str(indexnewplayer)] = SavedCharacter[6]
+    sheet['H'+str(indexnewplayer)] = SavedCharacter[7]
+    sheet['I'+str(indexnewplayer)] = SavedCharacter[8]
+    sheet['J'+str(indexnewplayer)] = SavedCharacter[9]
+    sheet['S'+str(indexnewplayer)] = 0
+    sheet['T'+str(indexnewplayer)] = 0
+    sheet['U'+str(indexnewplayer)] = 0
+    sheet['V'+str(indexnewplayer)] = Gender
+    sheet['W'+str(indexnewplayer)] = 0
+
+    chooseguild()
+
+ 
+    wb.save('Database RPG.xlsx')
+    wb.close()
+    wb1.close()
+    wb2.close()    
+    
+    chosetorso(Name2)
+    
+    ###make new dropbox
+    SavedCharacters =[]
+    SCIndex = []
+    wb1 = load_workbook(filename = 'Database RPG.xlsx')
+    sheet1 = wb1['Characters']
+    Class = 'A'
+    Cindex = 2
+    for i in range(2, 110):
+        Class = Class + str(i)
+        i = i + 1
+        Value = sheet1[Class].value
+        if Value is not None:    
+            SavedCharacters.append(Value)
+            SCIndex.append(Cindex)
+            Cindex = Cindex + 1
+        Class = 'A'
+
+    #CharacterDropBox.destroy()
+    CharacterDropBox = ttk.Combobox(page1, width = 20)
+    CharacterDropBox['values'] = SavedCharacters
+    CharacterDropBox.grid(row=7, column=2)
+    ###make new dropbox
+    wb1.close()
+    insertnametabs(Name2)
+
+    
+def ChooseLifePath():
+    #check if data has already been chosen
+    TestList = []
+    wb2 = load_workbook(filename = 'Database RPG.xlsx')
+    sheet2 = wb2['Characters']
+    PLindex2 = 0
+    for l in SavedCharacters:
+        if ReturnList[0] == l:            
+            index2 = SavedCharacters.index(l)
+            PLindex2 = SCIndex[index2]
+        else:
+            PLindex2 = len(SavedCharacters)+2
+            
+    TestList.append(sheet2['K'+str(PLindex2)].value)
+    TestList.append(sheet2['L'+str(PLindex2)].value)
+    TestList.append(sheet2['M'+str(PLindex2)].value)
+    TestList.append(sheet2['N'+str(PLindex2)].value)
+    TestList.append(sheet2['O'+str(PLindex2)].value)
+    TestList.append(sheet2['P'+str(PLindex2)].value)
+    TestList.append(sheet2['Q'+str(PLindex2)].value)
+    TestList.append(sheet2['R'+str(PLindex2)].value)
+
+    TestResult = 0
+    for o in TestList:
+        try:
+            TestResult = TestResult + int(o)
+        except:
+            pass
+
+    if TestResult > 0:
+        messagebox.showinfo("Stop", "Life's path has been chosen") 
+        sys.exit(1)
+    
+
+    #Get data from bonussheet
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['BonusSheet']
+    GC = []
+    SC = []
+    BC = []
+    #ReturnList = []
+
+    
+    GuildCheck = var1.get() + var2.get() + var3.get()
+    SoulCheck = var11.get() + var12.get() + var13.get()
+    BodyCheck = var21.get() + var22.get() + var23.get()
+
+    if GuildCheck != 1:
+        messagebox.showinfo("Stop", "One guild has to be chosen...")
+        sys.exit(1)        
+
+    if SoulCheck != 1:
+        messagebox.showinfo("Stop", "one enrichenment has to be chosen...")
+        sys.exit(1)
+
+    if BodyCheck != 1:
+        messagebox.showinfo("Stop", "One build has to be chosen...")
+        sys.exit(1)
+    #Guild Bonus
+    g = 2
+    if var1.get() == 1:
+        GC.append(sheet['B'+str(g)].value)
+        GC.append(sheet['C'+str(g)].value)
+        GC.append(sheet['D'+str(g)].value)
+        GC.append(sheet['E'+str(g)].value)
+        GC.append(sheet['F'+str(g)].value)
+        GC.append(sheet['G'+str(g)].value)
+        GC.append(sheet['H'+str(g)].value)
+        GC.append(sheet['I'+str(g)].value)
+    g = 3
+    if var2.get() == 1:
+        GC.append(sheet['B'+str(g)].value)
+        GC.append(sheet['C'+str(g)].value)
+        GC.append(sheet['D'+str(g)].value)
+        GC.append(sheet['E'+str(g)].value)
+        GC.append(sheet['F'+str(g)].value)
+        GC.append(sheet['G'+str(g)].value)
+        GC.append(sheet['H'+str(g)].value)
+        GC.append(sheet['I'+str(g)].value)
+    g = 4
+    if var3.get() == 1:
+        GC.append(sheet['B'+str(g)].value)
+        GC.append(sheet['C'+str(g)].value)
+        GC.append(sheet['D'+str(g)].value)
+        GC.append(sheet['E'+str(g)].value)
+        GC.append(sheet['F'+str(g)].value)
+        GC.append(sheet['G'+str(g)].value)
+        GC.append(sheet['H'+str(g)].value)
+        GC.append(sheet['I'+str(g)].value)
+
+    #Body bonus
+    g = 7
+    if var11.get() == 1:
+        BC.append(sheet['B'+str(g)].value)
+        BC.append(sheet['C'+str(g)].value)
+        BC.append(sheet['D'+str(g)].value)
+        BC.append(sheet['E'+str(g)].value)
+        BC.append(sheet['F'+str(g)].value)
+        BC.append(sheet['G'+str(g)].value)
+        BC.append(sheet['H'+str(g)].value)
+        BC.append(sheet['I'+str(g)].value)
+    g = 8
+    if var12.get() == 1:
+        BC.append(sheet['B'+str(g)].value)
+        BC.append(sheet['C'+str(g)].value)
+        BC.append(sheet['D'+str(g)].value)
+        BC.append(sheet['E'+str(g)].value)
+        BC.append(sheet['F'+str(g)].value)
+        BC.append(sheet['G'+str(g)].value)
+        BC.append(sheet['H'+str(g)].value)
+        BC.append(sheet['I'+str(g)].value)
+    g = 9
+    if var13.get() == 1:
+        BC.append(sheet['B'+str(g)].value)
+        BC.append(sheet['C'+str(g)].value)
+        BC.append(sheet['D'+str(g)].value)
+        BC.append(sheet['E'+str(g)].value)
+        BC.append(sheet['F'+str(g)].value)
+        BC.append(sheet['G'+str(g)].value)
+        BC.append(sheet['H'+str(g)].value)
+        BC.append(sheet['I'+str(g)].value)
+
+    #Soul Bonus
+    g = 12
+    if var21.get() == 1:
+        SC.append(sheet['B'+str(g)].value)
+        SC.append(sheet['C'+str(g)].value)
+        SC.append(sheet['D'+str(g)].value)
+        SC.append(sheet['E'+str(g)].value)
+        SC.append(sheet['F'+str(g)].value)
+        SC.append(sheet['G'+str(g)].value)
+        SC.append(sheet['H'+str(g)].value)
+        SC.append(sheet['I'+str(g)].value)
+    g = 13
+    if var22.get() == 1:
+        SC.append(sheet['B'+str(g)].value)
+        SC.append(sheet['C'+str(g)].value)
+        SC.append(sheet['D'+str(g)].value)
+        SC.append(sheet['E'+str(g)].value)
+        SC.append(sheet['F'+str(g)].value)
+        SC.append(sheet['G'+str(g)].value)
+        SC.append(sheet['H'+str(g)].value)
+        SC.append(sheet['I'+str(g)].value)
+    g = 14
+    if var23.get() == 1:
+        SC.append(sheet['B'+str(g)].value)
+        SC.append(sheet['C'+str(g)].value)
+        SC.append(sheet['D'+str(g)].value)
+        SC.append(sheet['E'+str(g)].value)
+        SC.append(sheet['F'+str(g)].value)
+        SC.append(sheet['G'+str(g)].value)
+        SC.append(sheet['H'+str(g)].value)
+        SC.append(sheet['I'+str(g)].value)
+
+    BonusValueStrength = GC[0] + BC[0] + SC[0]
+    BonusValueDefense = GC[1] + BC[1] + SC[1]
+    BonusValueDexterity = GC[2] + BC[2] + SC[2]
+    BonusValueMagic = GC[3] + BC[3] + SC[3]
+    BonusValueStamina = GC[4] + BC[4] + SC[4]
+    BonusValueSocial = GC[5] + BC[5] + SC[5]
+    BonusValueLife = GC[6] + BC[6] + SC[6]
+    BonusValueMana = GC[7] + BC[7] + SC[7]
+
+    ReturnList.append(BonusValueStrength)
+    ReturnList.append(BonusValueDefense)
+    ReturnList.append(BonusValueDexterity)
+    ReturnList.append(BonusValueMagic)
+    ReturnList.append(BonusValueStamina)
+    ReturnList.append(BonusValueSocial)
+    ReturnList.append(BonusValueLife)
+    ReturnList.append(BonusValueMana)
+
+    PLindex = 0
+    for l in SavedCharacters:
+        if ReturnList[0] == l:            
+            index = SavedCharacters.index(l)
+            PLindex = SCIndex[index]
+        else:
+            PLindex = len(SavedCharacters)+2
+
+    #write data to charactersheet
+
+    wb3 = load_workbook(filename = 'Database RPG.xlsx')
+    sheet3 = wb3['Characters']
+
+    sheet3['K'+str(PLindex)] = ReturnList[1]
+    sheet3['L'+str(PLindex)] = ReturnList[2]
+    sheet3['M'+str(PLindex)] = ReturnList[3]
+    sheet3['N'+str(PLindex)] = ReturnList[4]
+    sheet3['O'+str(PLindex)] = ReturnList[5]
+    sheet3['P'+str(PLindex)] = ReturnList[6]
+    sheet3['Q'+str(PLindex)] = ReturnList[7]
+    sheet3['R'+str(PLindex)] = ReturnList[8]
+
+    wb3.save('Database RPG.xlsx')
+    wb3.close()
+    wb2.close()
+    wb.close()
+
+    messagebox.showinfo("Written", "Life's path is decided")
+
+def chooseguild():
+    top = ttk.top = Toplevel()
+    NPTP = str(CharacterDropBox.get())
+    
+    ReturnList.append(str(CharacterDropBox.get()))
+  
+
+    tkinter.Label(top, text="Character: "+ str(NPTP),borderwidth=1 ).grid(row=1,column=2)
+
+    
+    tkinter.Label(top, text="Choose your life path...", font = 'Bold').grid(row=1,column=1)
+    tkinter.Label(top, text=" ").grid(row=2,column=1)
+    tkinter.Label(top, text="Which of these guilds is yours?").grid(row=3,column=1)
+    tkinter.Label(top, text=" ").grid(row=4,column=1)
+ 
+    Checkbutton(top, text="Jungle of peace and poison", variable = var1).grid(row=5, column=1)
+
+    Checkbutton(top, text="Headquarters of war and technology", variable = var2).grid(row=6, column=1)
+ 
+    Checkbutton(top, text="Astral plane of magic and monsters", variable = var3).grid(row=7, column=1)
+    tkinter.Label(top, text=" ").grid(row=8,column=1)
+    tkinter.Label(top, text="How do you enrichen your soul?").grid(row=9,column=1)
+
+    Checkbutton(top, text="The absorption of letters", variable = var11).grid(row=10, column=1)
+
+    Checkbutton(top, text="Viewing of the stars", variable = var12).grid(row=11, column=1)
+
+    Checkbutton(top, text="My ears are my guide", variable = var13).grid(row=12, column=1)
+    tkinter.Label(top, text=" ").grid(row=13,column=1)
+    tkinter.Label(top, text="In what ways do you build your body?").grid(row=14,column=1)
+
+    Checkbutton(top, text="An ascetic lifestyle", variable = var21).grid(row=15, column=1)
+
+    Checkbutton(top, text="Enduring painful hardship", variable = var22).grid(row=16, column=1)
+
+    Checkbutton(top, text="Let nature guide me", variable = var23).grid(row=17, column=1)
+
+    b = Button(top, text="Life Path Chosen", command=ChooseLifePath)
+    b.grid(row=18,column=1)
+
+#storyline functions
+def insertnametabs(Name):
+    cash = float(getcash(Name))
+    level = int(getlevel(Name))
+    labelnamepage3.configure(text=str(Name))
+    labelnamepage4.configure(text=str(Name))
+    labelnamepage5.configure(text=str(Name))
+    labelnamepage30.configure(text="%.2f" % cash+"€")
+    labelnamepage40.configure(text="%.2f" % cash+"€")
+    labelnamepage50.configure(text="%.2f" % cash+"€")
+    labelnamepage300.configure(text="Level: "+str(level))
+    labelnamepage400.configure(text="Level: "+str(level))
+    labelnamepage500.configure(text="Level: "+str(level))
+
+def findgender(char):
+    index = getindex(char)
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['Characters']
+    gender = str(sheet['V'+str(index)].value)
+    wb.close()
+
+    return str(gender)
+
+def chosetorso(char):
+    #PicCl = ["Pics\male.png", "Pics\female.png"]
+    if findgender(char) == "Male":
+        stgImg = PhotoImage(file="C:\\Users\\p.pauwels\\OneDrive - Gamesgroup\\Documenten\\IT Projects\\Pics\\male.png")
+        imglabel1.configure(image=stgImg)
+        imglabel1.image = stgImg
+    else:
+        stgImg = PhotoImage(file="C:\\Users\\p.pauwels\\OneDrive - Gamesgroup\\Documenten\\IT Projects\\Pics\\female.png")
+        imglabel1.configure(image=stgImg)
+        imglabel1.image = stgImg
+
+
+###INTERNAL FUNCTIONS
+##Battle overview
+#calculate functions
+def randominteger(sn, en):
+    RI = random.randint(sn, en)
+    return RI
+
+def calculateattack(strength):
+    strength = strength/100
+    Attack = strength * randominteger(1, 10)
+    if int(Attack) == 0:
+        Attack = 1
+
+    return int(Attack)
+
+def CalculateStrength(char):
+    wb = load_workbook(filename ='Database RPG.xlsx')
+    sheet = wb['Characters']
+    index = getindex(char)
+    Str = float(sheet['C'+str(index)].value) * 1 + float(sheet['K'+str(index)].value)/100 
+    Dex = float(sheet['D'+str(index)].value) * 1 + float(sheet['M'+str(index)].value)/100 
+    Sta = float(sheet['G'+str(index)].value) * 1 + float(sheet['O'+str(index)].value)/100
+    
+    if sheet['X'+str(index)].value != None:
+        WStr = float(sheet['X'+str(index)].value)
+    else:
+        WStr = 0
+        
+    if sheet['Z'+str(index)].value != None:
+        WDex = float(sheet['Z'+str(index)].value)
+        WDex = WDex / 2
+    else:
+        WDex = 0
+        
+    if sheet['AB'+str(index)].value != None:
+        WSta = float(sheet['AB'+str(index)].value)
+        WSta = WSta / 3
+    else:
+        WSta = 0
+        
+    Strength = int(Str) + int(Dex/2) + int(Sta/3) + int(WStr) + int(WDex) + int(WSta)
+    return Strength
+
+def CalculateDefense(char):
+    Defense = float(sheet['D'+str(index)].value) * 1 + float(sheet['L'+str(index)].value)/100
+    if sheet['Y'+str(index)].value != None:
+        WDef = float(sheet['Y'+str(index)].value)
+    else:
+        WDef = 0
+    if sheet['Z'+str(index)].value != None:
+        WDex = float(sheet['Z'+str(index)].value)
+        WDex=WDex/2
+    else:
+        WDex = 0
+    if sheet['AB'+str(index)].value != None:
+        WSta = float(sheet['AB'+str(index)].value)
+        WSta = WSta/2
+    else:
+        WSta = 0
+
+    Defense = Defense + int(Def) + int(Dex/2) + int(Sta/2) + int(WDef) + int(WDex) + int(WSta)
+    return Defense
+
+#get functions
+                    
+def getlifecharacter(char):
+    index = getindex(char)
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['Characters']
+    life = int(sheet['I'+str(index)].value)
+    wb.close()
+
+    return life
+   
+def getindex(char):
+    SavedCharacters =[]
+    SCIndex = []
+    wb1 = load_workbook(filename ='Database RPG.xlsx')
+    sheet1 = wb1['Characters']
+    Class = 'A'
+    Cindex = 2
+    for i in range(2, 110):
+        Class = Class + str(i)
+        i = i + 1
+        Value = sheet1[Class].value
+        if Value is not None:    
+            SavedCharacters.append(Value)
+            SCIndex.append(Cindex)
+            Cindex = Cindex + 1
+        Class = 'A'
+    for x in SavedCharacters:
+        if str(x) == str(char):
+            index = SavedCharacters.index(x) + 2
+    wb1.close()
+
+    
+    return index
+        
+def getlevel(char):
+    level = 0
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['Characters']
+    index = getindex(char)
+    try:
+        level = int(sheet['W'+str(index)].value)
+    except:
+        pass
+    wb.close()
+    return level
+
+def getcash(char):
+    cash = 0
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['Characters']
+    index = getindex(char)
+    try:
+        cash = float(sheet['S'+str(index)].value)
+    except:
+        pass
+    wb.close()
+    return cash
+
+    
+def pickenemy(startnr, endnr):
+    Enemies = []
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['Enemies']
+    for i in range(startnr, endnr):
+        Enemies.append([sheet['A'+str(i)].value, sheet['B'+str(i)].value, sheet['C'+str(i)].value, sheet['D'+str(i)].value, sheet['E'+str(i)].value, sheet['F'+str(i)].value])
+    wb.close()
+    return Enemies
+
+#Battles    
+def randombattle(lvlene0, lvlene1, nrene0, nrene1):
+    MovesList = []
+    Enemies2 = []
+    Enemy = []
+
+    PlayerName = labelnamepage3.cget("text")
+    PlayerLevel = getlevel(PlayerName)
+    Enemies2 = pickenemy(lvlene0,lvlene1)
+ 
+    RI = randominteger(lvlene0-1,lvlene1-2)
+    for i in Enemies2:
+        if i[0] == RI:
+            Enemy.append(i[1])
+            Enemy.append(i[2])
+            Enemy.append(i[3])
+            Enemy.append(i[4])
+            Enemy.append(i[5])
+            
+    RI = randominteger(nrene0,nrene1)
+    
+    battleinitiaton.configure(text=str(RI) + " " + str(Enemy[0] + "'s attack " + str(PlayerName)+"\n"+"Details in Story window."))
+    
+    ###battle itself
+    Lifeplayer = getlifecharacter(PlayerName)
+    Lifeenemies = int(Enemy[3]) * int(RI)  
+    CCLifeEnmies = Lifeenemies
+        
+    WhoStarts = random.randint(0,1)
+    
+    while Lifeenemies > 0 and Lifeplayer > 0:
+        if WhoStarts == 0:
+            AttackPlayer = int(calculateattack(CalculateStrength(PlayerName)))
+            Lifeenemies = Lifeenemies - AttackPlayer
+            if Lifeenemies > 0:
+                MovesList.append(str(PlayerName) + " attacks for " + str(AttackPlayer) + " damage. \n" + str(Enemy[0]) + " has " + str(Lifeenemies) + " left.\n")
+            elif Lifeenemies <= 0:
+                MovesList.append(str(PlayerName) + " attacks for " + str(AttackPlayer) + " damage. \n" + str(Enemy[0]) + " is dead.\n")
+                Exp2Add = CalculateAddExp(PlayerLevel, nrene0, nrene1)
+                AddExp(Exp2Add, PlayerName)
+                Cash = CalculateCash(CCLifeEnmies, len(MovesList))
+                AddCash(Cash, PlayerName)                         
+
+                MovesList.append(str(Exp2Add) + " amount of experience has been earned.")
+                MovesList.append("%.2f" % Cash + " amount of cash has been won.")
+    
+               ###STORYLINE CONTINUATION###
+                wb = load_workbook(filename = 'Database RPG.xlsx')
+                sheet = wb['Characters']
+                CS = CheckStoryFlow(PlayerName)
+                index = getindex(PlayerName)
+                if CS == 1 and float(sheet['S'+str(index)].value)> 1000:
+                    Property.append("Abandoned House")
+                    Properties.config(values = Property)
+                    MovesList.append("Having been trough enough battles and seen a lot of places you see an abondoned house.")
+                    MovesList.append("You enter it unaware of the lurking dangers.")
+                    MovesList.append("As you fall on the old bed, dust fills in the room and an old book falls on the floor.")
+                    MovesList.append("The next morning you pick it up and start reading.")
+                    addstory(MovesList)
+                    nb.select(page2)
+                    AddItem("Old Book", PlayerName)
+                    AddProp("Abandoned House", PlayerName)
+                    UpStoryFlow(PlayerName)
+                    
+
+                ###STORYLINE CONTINUATION###
+                else:    
+                    addstory(MovesList)
+                wb.close()               
+                break
+            
+            AttackEnemy = int(calculateattack(int(Enemy[2])))
+            Lifeplayer = Lifeplayer - AttackEnemy
+            if Lifeplayer > 0:
+                MovesList.append(str(Enemy[0]) + " attacks for " + str(AttackEnemy) + " damage. \n" + str(PlayerName) + " has " + str(Lifeplayer) + " left.\n")
+            elif Lifeplayer <= 0:
+                MovesList.append(str(Enemy[0]) + " attacks for " + str(AttackEnemy) + " damage. \n" + str(PlayerName) + " is dead.\n")
+                MovesList.append(str(PlayerName) + " is dead. " + str(Enemy[0]) + " has won.")
+                addstory(MovesList)
+                
+        if WhoStarts == 1:
+            AttackEnemy = int(calculateattack(int(Enemy[2])))
+            Lifeplayer = Lifeplayer - AttackEnemy
+            if Lifeplayer > 0:
+                MovesList.append(str(Enemy[0]) + " attacks for " + str(AttackEnemy) + " damage. \n" + str(PlayerName) + " has " + str(Lifeplayer) + " left.\n")
+            elif Lifeplayer <= 0:
+                MovesList.append(str(Enemy[0]) + " attacks for " + str(AttackEnemy) + " damage. \n" + str(PlayerName) + " is dead.\n")
+                MovesList.append(str(PlayerName) + " is dead. " + str(Enemy[0]) + " has won.")
+                addstory(MovesList) 
+                break            
+            AttackPlayer = int(calculateattack(CalculateStrength(PlayerName)))
+            Lifeenemies = Lifeenemies - AttackPlayer
+            if Lifeenemies > 0:
+                MovesList.append(str(PlayerName) + " attacks for " + str(AttackPlayer) + " damage. \n" + str(Enemy[0]) + " has " + str(Lifeenemies) + " left.\n")
+            elif Lifeenemies <= 0:
+                MovesList.append(str(PlayerName) + " attacks for " + str(AttackPlayer) + " damage. \n" + str(Enemy[0]) + " is dead.\n")
+                Exp2Add = CalculateAddExp(PlayerLevel, nrene0, nrene1)
+                AddExp(Exp2Add, PlayerName)
+                Cash = CalculateCash(CCLifeEnmies, len(MovesList))
+                AddCash(Cash, PlayerName)                         
+
+                MovesList.append(str(Exp2Add) + " amount of experience has been earned.")
+                MovesList.append("%.2f" % Cash + " amount of cash has been won.")
+
+
+               ###STORYLINE CONTINUATION###
+                wb = load_workbook(filename = 'Database RPG.xlsx')
+                sheet = wb['Characters']
+                CS = CheckStoryFlow(PlayerName)
+                index = getindex(PlayerName)
+                if CS == 1 and float(sheet['S'+str(index)].value)> 1000:
+                    Property.append("Abandoned House")
+                    Properties.config(values = Property)
+                    MovesList.append("Having been trough enough battles and seen a lot of places you see an abondoned house.")
+                    MovesList.append("You enter it unaware of the lurking dangers.")
+                    MovesList.append("As you fall on the old bed, dust fills in the room and an old book falls on the floor.")
+                    MovesList.append("The next morning you pick it up and start reading.")
+                    addstory(MovesList)
+                    nb.select(page2)
+                    AddItem("Old Book", PlayerName)
+                    AddProp("Abandoned House", PlayerName)
+                    UpStoryFlow(PlayerName)
+                    
+
+                ###STORYLINE CONTINUATION###
+                else:    
+                    addstory(MovesList)
+                wb.close()
+           
+
+        
+def CalculateAddExp(lvlp, lvle1, lvle2):
+    BaseExp = (lvle1 + lvle2)*2
+    BaseExp = BaseExp * random.randint(1,4)
+
+    if lvlp < lvle2:
+        BaseExp = int(BaseExp*1.25)
+    else:
+        BaseExp = int((BaseExp/10)*0.75)
+
+
+    return BaseExp
+
+def AddExp(exp, char):
+    SavedCharacters =[]
+    wb1 = load_workbook(filename = 'Database RPG.xlsx')
+    sheet1 = wb1['Characters']
+    Class = 'A'
+    for i in range(2, 110):
+        Class = Class + str(i)
+        i = i + 1
+        Value = sheet1[Class].value
+        if Value is not None:    
+            SavedCharacters.append(Value)
+        Class = 'A'
+        
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['Characters']
+    for x in SavedCharacters:
+        if str(x) == str(char):
+            index = SavedCharacters.index(x) + 2
+            sheet['U'+str(index)] = int(sheet['U'+str(index)].value) + int(exp)
+            Exp2Check = sheet['U'+str(index)].value
+    ###UPDATE LEVEL###
+    level = 0
+    if Exp2Check >= 0 and Exp2Check <= 50:
+        level = 1
+    elif Exp2Check >=51 and Exp2Check<=125:
+        level = 2
+    elif Exp2Check >= 126 and Exp2Check<=300:
+        level = 3
+    elif Exp2Check >= 301 and Exp2Check<=800:
+        level = 4
+    elif Exp2Check >= 801 and Exp2Check<=1800:
+        level = 5
+    elif Exp2Check >= 1801 and Exp2Check<=2900:
+        level = 6
+    elif Exp2Check >= 2901 and Exp2Check<=6200:
+        level = 7
+    elif Exp2Check >= 6201 and Exp2Check<=14000:
+        level = 8
+    elif Exp2Check >= 14001 and Exp2Check<=31000:
+        level = 9
+    elif Exp2Check >= 31001 and Exp2Check<=65000:
+        level = 10
+    elif Exp2Check >= 65000 and Exp2Check<=140000:
+        level = 11
+
+    sheet['W'+str(index)] = int(level)
+
+    wb.save('Database RPG.xlsx')
+    wb.close()
+    wb1.close()
+
+    insertnametabs(char)
+
+
+def CalculateCash(enemylife, moves):
+    Cash = int(enemylife*(1+(100-moves)))
+    RandomizerCash = random.randint(1,5)/100
+    Cash = float((Cash * 1 + RandomizerCash)/100)    
+
+    return Cash
+
+def SubtractCash(cash, char):
+    SavedCharacters =[]
+    wb1 = load_workbook(filename = 'Database RPG.xlsx')
+    sheet1 = wb1['Characters']
+    Class = 'A'
+    for i in range(2, 110):
+        Class = Class + str(i)
+        i = i + 1
+        Value = sheet1[Class].value
+        if Value is not None:    
+            SavedCharacters.append(Value)
+        Class = 'A'
+        
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['Characters']
+    for x in SavedCharacters:
+        if str(x) == str(char):
+            index = SavedCharacters.index(x) + 2
+            sheet['S'+str(index)] = float(sheet['S'+str(index)].value) - float(cash)
+
+    wb.save('Database RPG.xlsx')
+    wb.close()
+    wb1.close()
+
+    insertnametabs(char)
+    
+def AddCash(cash, char):
+    SavedCharacters =[]
+    wb1 = load_workbook(filename = 'Database RPG.xlsx')
+    sheet1 = wb1['Characters']
+    Class = 'A'
+    for i in range(2, 110):
+        Class = Class + str(i)
+        i = i + 1
+        Value = sheet1[Class].value
+        if Value is not None:    
+            SavedCharacters.append(Value)
+        Class = 'A'
+        
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['Characters']
+    for x in SavedCharacters:
+        if str(x) == str(char):
+            index = SavedCharacters.index(x) + 2
+            sheet['S'+str(index)] = float(sheet['S'+str(index)].value) + float(cash)
+
+ 
+    wb.save('Database RPG.xlsx')
+    wb.close()
+    wb1.close()
+
+    insertnametabs(char)
+#item functions
+def GetIndexWeapon(weapon):
+    Weapons = []
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['WeaponInventory']
+    #progress  in letters not numbers
+    a = 0
+    for i in range(len(ListOfLetters)):
+        WeaponEnu = str(ListOfLetters[a])+"1"
+        Weapons.append(sheet[WeaponEnu].value)
+        a = a +1
+    WeaponIndex = ListOfLetters[Weapons.index(weapon)]
+    wb.close()
+                       
+    return(WeaponIndex)
+
+def GetIndexArmor(armor):
+    Weapons = []
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['ArmorInventory']
+    #progress  in letters not numbers
+    a = 0
+    for i in range(len(ListOfLetters)):
+        WeaponEnu = str(ListOfLetters[a])+"1"
+        Weapons.append(sheet[WeaponEnu].value)
+        a = a +1
+    WeaponIndex = ListOfLetters[Weapons.index(armor)]
+    wb.close()
+                       
+    return(WeaponIndex)
+
+def GetIndexItem(item):
+    Weapons = []
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['ItemsInventory']
+    #progress  in letters not numbers
+    a = 0
+    for i in range(len(ListOfLetters)):
+        WeaponEnu = str(ListOfLetters[a])+"1"
+        Weapons.append(sheet[WeaponEnu].value)
+        a = a +1
+    WeaponIndex = ListOfLetters[Weapons.index(item)]
+    wb.close()
+                       
+    return(WeaponIndex)
+
+def GetIndexProp(prop):
+    Weapons = []
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['PropertyInventory']
+    #progress  in letters not numbers
+    a = 0
+    for i in range(len(ListOfLetters)):
+        WeaponEnu = str(ListOfLetters[a])+"1"
+        Weapons.append(sheet[WeaponEnu].value)
+        a = a +1
+    WeaponIndex = ListOfLetters[Weapons.index(prop)]
+    wb.close()
+                       
+    return(WeaponIndex)
+
+def AddProp(prop, char):
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['PropertyInventory']
+    indexchar = getindex(char)
+    indexweapon = GetIndexProp(prop)
+    IndexBoughtWeapon =  str(indexweapon)+str(indexchar)
+    StartValue = sheet[IndexBoughtWeapon].value
+    if StartValue == None:
+        StartValue = 0
+    StartValue = StartValue + 1
+    sheet[IndexBoughtWeapon] = StartValue
+    wb.save('Database RPG.xlsx')    
+    wb.close()
+
+    
+def AddWeapon(weapon, char):
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['WeaponInventory']
+    indexchar = getindex(char)
+    indexweapon = GetIndexWeapon(weapon)
+    IndexBoughtWeapon =  str(indexweapon)+str(indexchar)
+    StartValue = sheet[IndexBoughtWeapon].value
+    if StartValue == None:
+        StartValue = 0
+    StartValue = StartValue + 1
+    sheet[IndexBoughtWeapon] = StartValue
+    wb.save('Database RPG.xlsx')    
+    wb.close()
+
+def AddArmor(armor, char):
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['ArmorInventory']
+    indexchar = getindex(char)
+    indexweapon = GetIndexArmor(armor)
+    IndexBoughtWeapon =  str(indexweapon)+str(indexchar)
+    StartValue = sheet[IndexBoughtWeapon].value
+    if StartValue == None:
+        StartValue = 0
+    StartValue = StartValue + 1
+    sheet[IndexBoughtWeapon] = StartValue
+    wb.save('Database RPG.xlsx')    
+    wb.close()
+
+def AddItem(item, char):
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['ItemsInventory']
+    indexchar = getindex(char)
+    indexweapon = GetIndexItem(item)
+    IndexBoughtWeapon =  str(indexweapon)+str(indexchar)
+    StartValue = sheet[IndexBoughtWeapon].value
+    if StartValue == None:
+        StartValue = 0
+    StartValue = StartValue + 1
+    sheet[IndexBoughtWeapon] = StartValue
+    wb.save('Database RPG.xlsx')    
+    wb.close()
+ 
+def GetPriceItems(WBW):
+    WBWnrList = []
+    WBWnr = ""
+    p = -1 
+    for i in WBW:
+        WBWnrList.append(str(WBW[p]))
+        if WBW[p].isspace() == True:
+            break
+        p = p - 1
+    WBWnrList.sort(reverse=True)
+    for i in WBWnrList:
+        WBWnr = WBWnr + str(i)
+
+    return WBWnr
+
+def GetNameItems(WBX):
+    
+    return WBX[1:(WBX.index("}"))]
+
+def BuyItems():
+    WBW = WoodsmanBoxW.get()
+    WBA = WoodsmanBoxA.get()
+
+    PriceWBW = int(GetPriceItems(WBW))
+    PriceWBA = int(GetPriceItems(WBA))
+
+    TotalPrices = PriceWBW + PriceWBA
+
+    char = labelnamepage4.cget("text")
+
+    SubtractCash(TotalPrices, char)
+
+    AddWeapon(GetNameItems(WBW), char)
+    AddArmor(GetNameItems(WBA), char)
+
+def GetEffectWeapon(weapon):
+    Weaponeffects = []
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['WeaponsEffectValue']
+    Weapon = 'A'
+    Value = "@"
+    i = 2
+    while Value != weapon:
+        Weapon = Weapon + str(i)
+        Value = sheet[Weapon].value
+        if Value == weapon:    
+            Weaponeffects.append(sheet['B'+str(i)].value)
+            Weaponeffects.append(sheet['C'+str(i)].value)
+            Weaponeffects.append(sheet['D'+str(i)].value)
+            Weaponeffects.append(sheet['E'+str(i)].value)
+            Weaponeffects.append(sheet['F'+str(i)].value)
+            Weaponeffects.append(sheet['G'+str(i)].value)
+            Weaponeffects.append(sheet['H'+str(i)].value)
+            Weaponeffects.append(sheet['I'+str(i)].value)
+            Weaponeffects.append(sheet['J'+str(i)].value)
+        Weapon = 'A'
+        i = i + 1
+    wb.close()
+
+    return Weaponeffects
+
+def GetEffectArmor(armor):
+    Armoreffects = []
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['ArmorEffectValue']
+    Armor = 'A'
+    Value = "@"
+    i = 2
+    while Value != armor:
+        Armor = Armor + str(i)
+        Value = sheet[Armor].value
+        if Value == armor:    
+            Armoreffects.append(sheet['B'+str(i)].value)
+            Armoreffects.append(sheet['C'+str(i)].value)
+            Armoreffects.append(sheet['D'+str(i)].value)
+            Armoreffects.append(sheet['E'+str(i)].value)
+            Armoreffects.append(sheet['F'+str(i)].value)
+            Armoreffects.append(sheet['G'+str(i)].value)
+            Armoreffects.append(sheet['H'+str(i)].value)
+            Armoreffects.append(sheet['I'+str(i)].value)
+            Armoreffects.append(sheet['J'+str(i)].value)
+        Armor = 'A'
+        i = i + 1
+    wb.close()
+
+    return Armoreffects
+
+def MakeWeaponDropbox(char):
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['WeaponInventory']
+    indexchar = getindex(char)
+    a = 0
+    for i in range(len(ListOfLetters)):
+        WeaponEnu = str(ListOfLetters[a])+str(indexchar)
+        if sheet[WeaponEnu].value == None:
+            pass
+        elif sheet[WeaponEnu].value > 0:
+            WeaponListCharacter.append(sheet[str(ListOfLetters[a])+"1"].value)
+        a = a +1
+        
+    RHandSlot.config(values = WeaponListCharacter)
+    LHandSlot.config(values = WeaponListCharacter)
+    wb.close()
+
+    #property
+    PropList = []
+    wb2 = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb2['PropertyInventory']
+    a = 0
+    for i in range(len(ListOfLetters)):
+        WeaponEnu = str(ListOfLetters[a])+str(indexchar)
+        if sheet[WeaponEnu].value == None:
+            pass
+        elif sheet[WeaponEnu].value > 0:
+            PropList.append(sheet[str(ListOfLetters[a])+"1"].value)
+        a = a +1
+        
+    Properties.config(values = PropList)
+   
+    wb2.close()
+
+    
+
+
+    wb1 = load_workbook(filename = 'Database RPG.xlsx')
+    sheet1 = wb1['ArmorInventory']
+    a = 0
+    for i in range(len(ListOfLetters)):
+        ArmorEnu = str(ListOfLetters[a])+str(indexchar)
+        if sheet1[ArmorEnu].value == None:
+            pass
+        elif sheet1[ArmorEnu].value > 0:
+            AListCharacter.append(sheet1[str(ListOfLetters[a])+"1"].value)
+        a = a +1
+
+    for i in AListCharacter:
+        if GetEffectArmor(i)[8] == "Head":
+            HeadListCharacter.append(i)
+        elif GetEffectArmor(i)[8] == "Feet":
+            ShoesListCharacter.append(i)
+        elif GetEffectArmor(i)[8] == "Body":
+            ArmorListCharacter.append(i)
+        elif GetEffectArmor(i)[8] == "Legs":
+            PantsListCharacter.append(i)
+
+    wb1.close()
+            
+    ShoesSlot.config(values = ShoesListCharacter)
+    PantsSlot.config(values = PantsListCharacter)
+    ArmorSlot.config(values = ArmorListCharacter)
+    HeadSlot.config(values = HeadListCharacter)
+       
+
+def SaveEquipmentChar():
+    char = labelnamepage3.cget("text")
+    CountLegitEquip = 0
+    try:
+        RHandSlotLE = GetEffectWeapon(RHandSlot.get()[8])
+    except:
+        RHandSlotLE = ""
+    try:
+        LHandSlotLE = GetEffectWeapon(LHandSlot.get()[8])
+    except:
+        LHandSlotLE = ""
+        
+    HandLE = 0
+    if RHandSlotLE == "Twohand":
+        HandLE = 2
+    elif RHandSlotLE == "Onehand":
+        HandLE = 1
+    elif LHandSlotLE == "Twohand":
+        HandLE = HandLE + 2
+    elif LHandSlotLE == "Onehand":
+        HandLE = HandLE + 1
+    if HandLE > 2:
+        messagebox.showinfo("Equipment error", "Equip other items to hands, there is a two handed weapon in play.") 
+        sys.exit(1)
+
+    RHand = RHandSlot.get()
+    LHand = LHandSlot.get()
+    Shoes = ShoesSlot.get()
+    Pants = PantsSlot.get()
+    Armor = ArmorSlot.get()
+    Head = HeadSlot.get()
+
+    try:
+        RHandLE = GetEffectWeapon(RHand)
+    except:
+        RHandLE = [0,0,0,0,0,0,0,0]
+    try:    
+        LHandLE = GetEffectWeapon(LHand)
+    except:
+        LHandLE = [0,0,0,0,0,0,0,0]
+    try:
+        ShoesLE = GetEffectArmor(Shoes)
+    except:
+        ShoesLE = [0,0,0,0,0,0,0,0]
+    try:
+        PantsLE = GetEffectArmor(Pants)
+    except:
+        PantsLE = [0,0,0,0,0,0,0,0]
+    try:
+        ArmorLE = GetEffectArmor(Armor)
+    except:
+        ArmorLE = [0,0,0,0,0,0,0,0]
+    try:
+        HeadLE = GetEffectArmor(Head)
+    except:
+        HeadLE = [0,0,0,0,0,0,0,0]
+
+    EStrength = RHandLE[0]+LHandLE[0]+ShoesLE[0]+PantsLE[0]+ArmorLE[0]+HeadLE[0]
+    EDefense = RHandLE[1]+LHandLE[1]+ShoesLE[1]+PantsLE[1]+ArmorLE[1]+HeadLE[1]
+    EDexterity = RHandLE[2]+LHandLE[2]+ShoesLE[2]+PantsLE[2]+ArmorLE[2]+HeadLE[2]
+    EMagic = RHandLE[3]+LHandLE[3]+ShoesLE[3]+PantsLE[3]+ArmorLE[3]+HeadLE[3]
+    EStamina = RHandLE[4]+LHandLE[4]+ShoesLE[4]+PantsLE[4]+ArmorLE[4]+HeadLE[4]
+    ESocial = RHandLE[5]+LHandLE[5]+ShoesLE[5]+PantsLE[5]+ArmorLE[5]+HeadLE[5]
+    ELife = RHandLE[6]+LHandLE[6]+ShoesLE[6]+PantsLE[6]+ArmorLE[6]+HeadLE[6]
+    EMana = RHandLE[7]+LHandLE[7]+ShoesLE[7]+PantsLE[7]+ArmorLE[7]+HeadLE[7]
+    
+
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet0 = wb['Equipment']
+    sheet1 = wb['Characters']
+    indexchar = getindex(char)
+
+    if Head != None:
+        sheet0["B"+str(indexchar)] = Head
+    if LHand != None:
+        sheet0["C"+str(indexchar)] = LHand
+    if RHand != None:
+        sheet0["D"+str(indexchar)] = RHand
+    if Armor != None:
+        sheet0["E"+str(indexchar)] = Armor
+    if Pants != None:
+        sheet0["F"+str(indexchar)] = Pants
+    if Shoes != None:
+        sheet0["G"+str(indexchar)] = Shoes
+
+    sheet1["X"+str(indexchar)] = EStrength
+    sheet1["Y"+str(indexchar)] = EDefense
+    sheet1["Z"+str(indexchar)] = EDexterity
+    sheet1["AA"+str(indexchar)] = EMagic
+    sheet1["AB"+str(indexchar)] = EStamina
+    sheet1["AC"+str(indexchar)] = ESocial
+    sheet1["AD"+str(indexchar)] = ELife
+    sheet1["AE"+str(indexchar)] = EMana
+
+    wb.save('Database RPG.xlsx')
+
+def LoadEquipmentChar(char):
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['Equipment']
+    indexchar = getindex(char)
+
+    try:
+        HeadSlot.insert(END, sheet['B'+ str(indexchar)].value)
+    except:
+        pass
+    try:
+        RHandSlot.insert(END, sheet['D'+ str(indexchar)].value)
+    except:
+        pass
+    try:
+        LHandSlot.insert(END, sheet['C'+ str(indexchar)].value)
+    except:
+        pass
+    try:
+        ShoesSlot.insert(END, sheet['G'+ str(indexchar)].value)
+    except:
+        pass
+    try:
+        PantsSlot.insert(END, sheet['F'+ str(indexchar)].value)
+    except:
+        pass
+    try:
+        ArmorSlot.insert(END, sheet['E'+ str(indexchar)].value)
+    except:
+        pass
+
+    wb.close()
+
+
+def MakeItemList(char):
+    #Weapons
+    WeaponListChar = []
+    WeaponListChar.append("WEAPONLIST")
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['WeaponInventory']
+    indexchar = getindex(char)
+
+    a = 0
+    for i in range(len(ListOfLetters)):
+        WeaponEnu = str(ListOfLetters[a])+str(indexchar)
+        if sheet[WeaponEnu].value == None:
+            pass
+        else: 
+            WeaponListChar.append([sheet[str(ListOfLetters[a])+"1"].value + " x", sheet[WeaponEnu].value])
+        a = a +1
+    wb.close()
+    #Armor
+    ArmorListChar = []
+    ArmorListChar.append("ARMORLIST")
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['ArmorInventory']
+    indexchar = getindex(char)
+
+    a = 0
+    for i in range(len(ListOfLetters)):
+        WeaponEnu = str(ListOfLetters[a])+str(indexchar)
+        if sheet[WeaponEnu].value == None:
+            pass
+        else: 
+            ArmorListChar.append([sheet[str(ListOfLetters[a])+"1"].value + " x", sheet[WeaponEnu].value])
+        a = a +1
+    wb.close()
+    #Items
+    ItemListChar = []
+    ItemListChar.append("ITEMLIST")
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['ItemsInventory']
+    indexchar = getindex(char)
+
+    a = 0
+    for i in range(len(ListOfLetters)):
+        WeaponEnu = str(ListOfLetters[a])+str(indexchar)
+        if sheet[WeaponEnu].value == None:
+            pass
+        else: 
+            ItemListChar.append([sheet[str(ListOfLetters[a])+"1"].value + " x", sheet[WeaponEnu].value])
+        a = a +1
+    wb.close()
+    
+
+    AddWeapons(WeaponListChar)
+    AddArmors(ArmorListChar)
+    AddItems(ItemListChar)
+
+def AddItems(ItemList):
+    listbox4.delete(0,'end')
+    CountRowsO = 0
+    SA = []
+    StringShowAll = ""
+    for x in ItemList:
+        CountRowsO = CountRowsO + 1
+        SA.append(str(x))
+        StringShowAll = StringShowAll + str(x) + "\n"
+ 
+    for i in range(0,CountRowsO):
+        listbox4.insert(END, str(SA[i]))
+
+
+def AddWeapons(ItemList):
+    listbox2.delete(0,'end')
+    CountRowsO = 0
+    SA = []
+    StringShowAll = ""
+    for x in ItemList:
+        CountRowsO = CountRowsO + 1
+        SA.append(str(x))
+        StringShowAll = StringShowAll + str(x) + "\n"
+ 
+    for i in range(0,CountRowsO):
+        listbox2.insert(END, str(SA[i]))
+
+def AddArmors(ItemList):
+    listbox3.delete(0,'end')
+    CountRowsO = 0
+    SA = []
+    StringShowAll = ""
+    for x in ItemList:
+        CountRowsO = CountRowsO + 1
+        SA.append(str(x))
+        StringShowAll = StringShowAll + str(x) + "\n"
+ 
+    for i in range(0,CountRowsO):
+        listbox3.insert(END, str(SA[i])) 
+    
+#property functions
+def InnActionsButton():
+    char = char = labelnamepage4.cget("text")
+    Action = ActionsInnCBox.get()
+    if Action == "Visit":
+        top = ttk.top = Toplevel()
+        tkinter.Label(top, text="THE WEARY HORSE", font = 'Bold').grid(row=1,column=1)
+        
+
+    
+#story functions
+def UpStoryFlow(char):
+    SavedCharacters =[]
+    wb1 = load_workbook(filename ='Database RPG.xlsx')
+    sheet1 = wb1['Characters']
+    Class = 'A'
+    for i in range(2, 110):
+        Class = Class + str(i)
+        i = i + 1
+        Value = sheet1[Class].value
+        if Value is not None:    
+            SavedCharacters.append(Value)
+        Class = 'A'
+        
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['Characters']
+    SFNumber = 0
+    for x in SavedCharacters:
+        if str(x) == str(char):
+            index = SavedCharacters.index(x) + 2
+            if sheet['T'+str(index)].value == None:
+                SFNumber = 1
+                sheet['T'+str(index)] = SFNumber
+            else:
+                SFNumber = sheet['T'+str(index)].value + 1
+                sheet['T'+str(index)] = SFNumber
+    wb.save('Database RPG.xlsx')
+    wb.close()
+    wb1.close()
+    
+def CheckStoryFlow(char):
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['Characters']
+    CSFNumber = 0
+    for x in SavedCharacters:
+        if str(x) == str(char):
+            index = SavedCharacters.index(x) + 2
+            CSFNumber = sheet['T'+str(index)].value
+    return(CSFNumber)
+
+def FindStoryContinue(nr):
+    FSC = []
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['Story']
+    nr =nr+1
+    FSC.append(sheet['B'+str(nr)].value)
+    return FSC
+
+def remove():
+    BT42.grid_remove()
+    ActionsInnCBox.grid_remove()
+
+            
+def continuestory():
+    global BT42
+    global ActionsInnCBox
+    char = CharacterDropBox.get()
+    if char == None:
+        messagebox.showinfo("Stop", "Choose a character to continue with")
+        sys.exit(1) 
+    elif char == "":
+        char = labelnamepage3.cget("text")
+    ###STORYLINE CONTINUATION###
+    labelInn.configure(text="") 
+    remove()
+        
+    StoryNumber = CheckStoryFlow(char)    
+    addstory(FindStoryContinue(StoryNumber))
+    if StoryNumber >= 2:
+        tkinter.Label(page4, text="      ",borderwidth=1 ).grid(row=5,column=6)    
+        labelInn.configure(text="Inn - The Weary Horse")
+        ActionsInnCBox = ttk.Combobox(page4, width = 20, values = ActionsInn)
+        ActionsInnCBox.grid(row=7, column=6)
+        BT42 = Button(page4, text="Perform Action on Inn", command = InnActionsButton)
+        BT42.grid(row=8,column=6)
+        
+    
+    ###STORYLINE CONTINUATION###
+    chosetorso(char)
+    insertnametabs(char)
+    MakeItemList(char)
+    MakeWeaponDropbox(char)
+    LoadEquipmentChar(char)
+    
+    nb.select(page2)
+
+def addstory(StoryList):
+    listbox.delete(0,'end')
+    CountRowsO = 0
+    SA = []
+    StringShowAll = ""
+    for x in StoryList:
+        CountRowsO = CountRowsO + 1
+        SA.append(str(x))
+        StringShowAll = StringShowAll + str(x) + "\n"
+ 
+    for i in range(0,CountRowsO):
+        listbox.insert(END, str(SA[i]))
+
+def addstoryWOdelete(StoryList):
+    CountRowsO = 0
+    SA = []
+    StringShowAll = ""
+    for x in StoryList:
+        CountRowsO = CountRowsO + 1
+        SA.append(str(x))
+        StringShowAll = StringShowAll + str(x) + "\n"
+ 
+    for i in range(0,CountRowsO):
+        listbox.insert(END, str(SA[i]))
+
+    
+def start():
+    #checken of er een naam gekozen is
+    Name2 = CharacterDropBox.get() 
+    if Name2 == None:
+        messagebox.showinfo("Stop", "Choose a character to continue with")
+        sys.exit(1) 
+    elif Name2 == "":
+        Name2 = labelnamepage3.cget("text")
+
+
+    ###STORYLINE CONTINUATION###  
+    CSNumber = CheckStoryFlow(Name2)
+    SL = []
+    SL.append("You already started your adventure")
+    if CSNumber > 1:
+        insertnametabs(Name2)
+        addstory(SL)
+        nb.select(page2)
+    ###STORYLINE CONTINUATION###
+     
+    wb = load_workbook(filename = 'Database RPG.xlsx')
+    sheet = wb['Story']
+    Value = sheet['B1'].value
+    storyline.append(str(Name2) + str(Value))
+    CountRowsO = 0
+    SA = []
+    StringShowAll = ""
+    for x in storyline:
+        CountRowsO = CountRowsO + 1
+        SA.append(str(x))
+        StringShowAll = StringShowAll + str(x) + "\n"
+ 
+    for i in range(0,CountRowsO):
+        listbox.insert(END, str(SA[i]))
+
+    wb.close()
+    chosetorso(Name2)
+    AddCash(0.5, Name2)
+    insertnametabs(Name2)
+    UpStoryFlow(Name2)	
+    nb.select(page2)
+    
+"""Opmaak Tabs"""
+     
+# gives weight to the cells in the grid
+rows = 0
+while rows < 50:
+    main.rowconfigure(rows, weight=1)
+    main.columnconfigure(rows, weight=1)
+    rows += 1
+ 
+# Defines and places the notebook widget
+nb = ttk.Notebook(main)
+nb.grid(row=1, column=0, columnspan=50, rowspan=49, sticky='NESW')
+ 
+# Adds tab 1 of the notebook
+page1 = ttk.Frame(nb)
+nb.add(page1, text='Introduction')
+
+"""Opmaak 1ste tab"""
+#Setting it up
+
+img = ImageTk.PhotoImage(Image.open("Pics\portal.png"))
+       
+#Displaying it
+tkinter.Label(page1, text="Provide your name: ",borderwidth=1 ).grid(row=1,column=1)
+Checkbutton(page1, text="Female", variable = gender1).grid(row=1, column=3)
+Checkbutton(page1, text="Male", variable = gender2).grid(row=1, column=4)
+NamePlayer = tkinter.Entry(page1,borderwidth=1, width =20 )
+NamePlayer.grid(row=1,column=2)
+tkinter.Label(page1, text="Provide class: ",borderwidth=1 ).grid(row=2,column=1)
+ClassDropBox = ttk.Combobox(page1, width = 20)
+ClassDropBox['values'] = Classes
+ClassDropBox.grid(row=2, column=2)
+BT1 = tkinter.Button(page1, text="Save your character", command=savecharacter).grid(row=3,column=2)
+tkinter.Label(page1, text=" ",borderwidth=1 ).grid(row=2,column=3)
+tkinter.Label(page1, text=" ",borderwidth=1 ).grid(row=2,column=4)
+imglabel1 = Label(page1, image=img).grid(row=6, column=2)
+
+
+tkinter.Label(page1, text="Pick Character: ",borderwidth=1 ).grid(row=7,column=1)
+CharacterDropBox = ttk.Combobox(page1, width = 20)
+CharacterDropBox['values'] = SavedCharacters
+CharacterDropBox.grid(row=7, column=2)
+
+BT11 = tkinter.Button(page1, text="Continue Story", command=continuestory).grid(row=7,column=5)
+tkinter.Label(page1, text="   ...or...    ",borderwidth=1 ).grid(row=7,column=6)
+BT12 = tkinter.Button(page1, text="Start Story", command=start).grid(row=7,column=7)
+
+
+# Adds tab 2 of the notebook
+page2 = ttk.Frame(nb)
+nb.add(page2, text='Storyline')
+
+CountRowsO = 0
+TempTTO = ""
+
+scrollbar = Scrollbar(page2)
+scrollbar.pack(side=RIGHT, fill=Y)
+
+listbox = Listbox(page2, yscrollcommand=scrollbar.set)
+for i in range(0,CountRowsO):
+    listbox.insert(END, str(TempTTO))
+listbox.pack(side=LEFT, fill=BOTH, ipadx = 660)
+
+scrollbar.config(command=listbox.yview)
+
+# Adds tab 3 of the notebook
+page3 = ttk.Frame(nb)
+nb.add(page3, text='Adventure')
+tkinter.Label(page3, text="  ",borderwidth=1 ).grid(row=1,column=1)
+
+tkinter.Label(page3, text="Character chosen is:  ",borderwidth=1 ).grid(row=2,column=1)
+labelnamepage3 = tkinter.Label(page3, text="   ")
+labelnamepage3.grid(row=3,column=1)
+labelnamepage30 = tkinter.Label(page3, text="   ")
+labelnamepage30.grid(row=4,column=1)
+labelnamepage300 = tkinter.Label(page3, text="   ")
+labelnamepage300.grid(row=5,column=1)
+
+tkinter.Label(page3, text="         ",borderwidth=1 ).grid(row=1,column=2)
+BT21 = tkinter.Button(page3, text="Random Battle", command=lambda: randombattle(2,5,1,3)).grid(row=1,column=3)
+BT22 = tkinter.Button(page3, text="Epic Battle", command=lambda: randombattle(97,100,1,1)).grid(row=1,column=5)
+battleinitiaton = tkinter.Label(page3, text="   ")
+battleinitiaton.grid(row=2,column=4)
+tkinter.Label(page3, text="         ",borderwidth=1 ).grid(row=3,column=4)
+
+# Adds tab 4 of the notebook
+page4 = ttk.Frame(nb)
+nb.add(page4, text='City')
+
+tkinter.Label(page4, text="Character chosen is:  ",borderwidth=1 ).grid(row=2,column=1)
+labelnamepage4 = tkinter.Label(page4, text="   ")
+labelnamepage4.grid(row=3,column=1)
+labelnamepage40 = tkinter.Label(page4, text="   ")
+labelnamepage40.grid(row=4,column=1)
+labelnamepage400 = tkinter.Label(page4, text="   ")
+labelnamepage400.grid(row=5,column=1)
+
+BT41 = tkinter.Button(page4, text="Buy selected items", command = BuyItems).grid(row=1,column=3)
+
+tkinter.Label(page4, text="      ",borderwidth=1 ).grid(row=2,column=2)
+tkinter.Label(page4, text="WOODSMAN SHOP",borderwidth=1 ).grid(row=2,column=3)
+
+tkinter.Label(page4, text="Woodsman weapons",borderwidth=1 ).grid(row=3,column=3)
+WoodsmanBoxW = ttk.Combobox(page4, width = 20)
+WoodsmanBoxW['values'] = WoodsmanShopWeapons
+WoodsmanBoxW.grid(row=4, column=3)
+
+tkinter.Label(page4, text="Woodsman armors",borderwidth=1 ).grid(row=3,column=4)
+WoodsmanBoxA = ttk.Combobox(page4, width = 20)
+WoodsmanBoxA['values'] = WoodsmanShopArmor
+WoodsmanBoxA.grid(row=4, column=4)
+
+tkinter.Label(page4, text="      ",borderwidth=1 ).grid(row=2,column=5)
+
+tkinter.Label(page4, text="      ",borderwidth=1 ).grid(row=2,column=6)
+tkinter.Label(page4, text="PROPERTIES",borderwidth=1 ).grid(row=3,column=6)
+Properties = ttk.Combobox(page4, width = 20, values = Property)
+Properties.grid(row=4, column=6)
+
+tkinter.Label(page4, text="      ",borderwidth=1 ).grid(row=5,column=6) 
+labelInn = tkinter.Label(page4, text="...",borderwidth=1 )
+labelInn.grid(row=6,column=6) 
+
+ActionsInnCBox = ttk.Combobox(page4, width = 20, values = [])
+ActionsInnCBox.grid(row=7, column=6)
+BT42 = Button(page4, text="...")
+BT42.grid(row=8,column=6, padx=10, pady=10)
+
+
+# Adds tab 5 of the notebook
+page5 = ttk.Frame(nb)
+nb.add(page5, text='Equipment')
+tkinter.Label(page5, text=" ",borderwidth=1 ).grid(row=1,column=1)
+tkinter.Label(page5, text="Character chosen is:  ",borderwidth=1 ).grid(row=2,column=1)
+labelnamepage5 = tkinter.Label(page5, text="   ")
+labelnamepage5.grid(row=3,column=1)
+labelnamepage50 = tkinter.Label(page5, text="   ")
+labelnamepage50.grid(row=4,column=1)
+labelnamepage500 = tkinter.Label(page5, text="   ")
+labelnamepage500.grid(row=5,column=1)
+
+tkinter.Label(page5, text="Head",borderwidth=1 ).grid(row=1,column=5)
+HeadSlot = ttk.Combobox(page5, width = 20, values = HeadListCharacter)
+#HeadSlot['values'] = HeadListCharacter
+HeadSlot.grid(row=2,column=5)
+
+tkinter.Label(page5, text=" ",borderwidth=1 ).grid(row=3,column=5)
+
+tkinter.Label(page5, text="Armor",borderwidth=1 ).grid(row=4,column=5)
+ArmorSlot = ttk.Combobox(page5, width = 20, values = ArmorListCharacter)
+#ArmorSlot['values'] = ArmorListCharacter
+ArmorSlot.grid(row=5,column=5)
+
+img2 = ImageTk.PhotoImage(Image.open("Pics\male.png"))
+imglabel1 = ttk.Label(page5, image=img2)
+imglabel1.grid(row=6, column=5)
+
+tkinter.Label(page5, text="Pants",borderwidth=1 ).grid(row=7,column=5)
+PantsSlot = ttk.Combobox(page5, width = 20, values = PantsListCharacter)
+#PantsSlot['values'] = PantsListCharacter
+PantsSlot.grid(row=8,column=5)
+
+tkinter.Label(page5, text=" ",borderwidth=1 ).grid(row=9,column=5)
+
+tkinter.Label(page5, text="Shoes",borderwidth=1 ).grid(row=10,column=5)
+ShoesSlot = ttk.Combobox(page5, width = 20, values = ShoesListCharacter)
+#ShoesSlot['values'] = ShoesListCharacter
+ShoesSlot.grid(row=11,column=5)
+
+tkinter.Label(page5, text="Left Hand",borderwidth=1 ).grid(row=4,column=6)
+LHandSlot = ttk.Combobox(page5, width = 20, values = WeaponListCharacter)
+#LHandSlot['values'] = WeaponListCharacter
+LHandSlot.grid(row=5,column=6)
+
+tkinter.Label(page5, text="Right Hand",borderwidth=1 ).grid(row=4,column=4)
+RHandSlot = ttk.Combobox(page5, width = 20, values = WeaponListCharacter)
+#RHandSlot['values'] = WeaponListCharacter
+RHandSlot.grid(row=5,column=4)
+
+tkinter.Label(page5, text="",borderwidth=1 ).grid(row=6,column=1)
+BT51 = tkinter.Button(page5, text="Save Equipment", command=SaveEquipmentChar).grid(row=7,column=1)
+
+# Adds tab 6 of the notebook
+page6 = ttk.Frame(nb)
+nb.add(page6, text='Items')
+
+CountRowsO = 0
+TempTTO = ""
+
+#listbox1
+scrollbar2 = Scrollbar(page6)
+scrollbar2.pack(side=LEFT, fill=Y)
+
+listbox2 = Listbox(page6, yscrollcommand=scrollbar2.set)
+for i in range(0,CountRowsO):
+    listbox2.insert(END, str(TempTTO))
+listbox2.pack(side=LEFT, fill=BOTH, ipadx = 200)
+
+scrollbar2.config(command=listbox2.yview)
+
+#listbox2
+scrollbar3 = Scrollbar(page6)
+scrollbar3.pack(side=LEFT, fill=Y)
+
+listbox3 = Listbox(page6, yscrollcommand=scrollbar3.set)
+for i in range(0,CountRowsO):
+    listbox3.insert(END, str(TempTTO))
+listbox3.pack(side=LEFT, fill=BOTH, ipadx = 200)
+
+scrollbar3.config(command=listbox3.yview)
+
+#listbox3
+scrollbar4 = Scrollbar(page6)
+scrollbar4.pack(side=LEFT, fill=Y)
+
+listbox4 = Listbox(page6, yscrollcommand=scrollbar4.set)
+for i in range(0,CountRowsO):
+    listbox4.insert(END, str(TempTTO))
+listbox4.pack(side=LEFT, fill=BOTH, ipadx = 200)
+
+scrollbar4.config(command=listbox3.yview)
+ 
+main.mainloop()
